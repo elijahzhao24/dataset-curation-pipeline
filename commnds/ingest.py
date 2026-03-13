@@ -6,6 +6,7 @@ from pathlib import Path
 from context import AppContext
 from db import count_vectors, find_nearest, insert_vector
 from services.embedding import extract_dinov2_features_batch, load_image_paths
+from services.roboflow import build_roboflow_preprocessor
 from services.storage import make_s3_key, upload_to_s3
 
 
@@ -24,10 +25,24 @@ def ingest(ctx: AppContext, args: argparse.Namespace) -> int:
     image_paths = load_image_paths(input_dir)
     print(f"Found {len(image_paths)} image files.")
 
+    preprocess_fn = None
+    if ctx.cfg.use_bin_mask_for_embedding:
+        preprocess_fn = build_roboflow_preprocessor(
+            roboflow_model_id=ctx.cfg.roboflow_model_id or "",
+            roboflow_api_key=ctx.cfg.roboflow_api_key or "",
+            class_name=ctx.cfg.roboflow_bin_class,
+            pad=ctx.cfg.roboflow_pad,
+            bg=ctx.cfg.roboflow_bg,
+        )
+        print("Roboflow preprocessing: enabled")
+    else:
+        print("Roboflow preprocessing: disabled")
+
     features, valid_paths = extract_dinov2_features_batch(
         image_paths=image_paths,
         model_name=ctx.cfg.dinov2_model,
         batch_size=ctx.cfg.batch_size,
+        preprocess_fn=preprocess_fn,
     )
 
     if len(valid_paths) == 0:

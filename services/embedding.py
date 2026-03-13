@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
 
 import numpy as np
 import torch
@@ -11,7 +11,7 @@ from PIL import Image
 try:
     from tqdm import tqdm
 except ImportError:
-    def tqdm(iterable, **_kwargs):  # type: ignore
+    def tqdm(iterable, **_kwargs):
         return iterable
 
 
@@ -48,10 +48,14 @@ def extract_dinov2_features_batch(
     image_paths: list[Path],
     model_name: str,
     batch_size: int,
+    preprocess_fn: Callable[[Image.Image, str], Image.Image] | None = None,
 ) -> tuple[np.ndarray, list[Path]]:
     """Extract DINOv2 embeddings from local images in batches."""
     if not image_paths:
         return np.empty((0, 0), dtype=np.float32), []
+
+    if batch_size <= 0:
+        raise ValueError("batch_size must be a positive integer.")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = torch.hub.load("facebookresearch/dinov2", model_name)
@@ -77,6 +81,8 @@ def extract_dinov2_features_batch(
         for path in batch_paths:
             try:
                 image = Image.open(path).convert("RGB")
+                if preprocess_fn is not None:
+                    image = preprocess_fn(image, str(path))
                 tensors.append(transform(image))
                 ok_paths.append(path)
             except Exception as exc:
