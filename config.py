@@ -31,13 +31,13 @@ class Config:
         _load_dotenv(dotenv_path)
 
         db_url = _resolve_db_url()
-        bucket_name = _require_first("AWS_S3_BUCKET")
+        bucket_name = _require_first("AWS_S3_BUCKET", "BUCKET_NAME")
 
         cfg = cls(
             db_url=db_url,
             bucket_name=bucket_name,
             aws_region=os.getenv("AWS_REGION", "us-east-1"),
-            cosine_sim_threshold=float(_first_non_empty("COSINE_THRESHOLD")),
+            cosine_sim_threshold=float(_first_non_empty("COSINE_THRESHOLD", "COSINE_SIM_THRESHOLD") or "0.98"),
             aws_access_key_id=_first_non_empty("AWS_ACCESS_KEY_ID"),
             aws_secret_access_key=_first_non_empty("AWS_SECRET_ACCESS_KEY"),
             aws_session_token=_first_non_empty("AWS_SESSION_TOKEN"),
@@ -75,11 +75,15 @@ def _first_non_empty(*names: str) -> str | None:
 def _require_first(*names: str) -> str:
     value = _first_non_empty(*names)
     if value is None:
-        raise RuntimeError(f"Missing required environment variable.")
+        raise RuntimeError(f"Missing required environment variable. Expected one of: {', '.join(names)}")
     return value
 
 
 def _resolve_db_url() -> str:
+    direct = _first_non_empty("DB_URL")
+    if direct:
+        return direct
+
     host = _first_non_empty("PGHOST")
     port = _first_non_empty("PGPORT")
     dbname = _first_non_empty("PGDATABASE")
@@ -96,11 +100,14 @@ def _resolve_db_url() -> str:
     missing = [name for name, value in values.items() if not value]
     if missing:
         raise RuntimeError(
-            "DB config missing. Missing: " + ", ".join(missing)
+            "DB config missing. Set DB_URL or provide PG* vars. Missing: " + ", ".join(missing)
         )
 
+    sslmode = _first_non_empty("PGSSLMODE")
     auth = f"{quote_plus(user)}:{quote_plus(password)}"
     base = f"postgresql://{auth}@{host}:{port}/{dbname}"
+    if sslmode:
+        return f"{base}?sslmode={quote_plus(sslmode)}"
     return base
 
 

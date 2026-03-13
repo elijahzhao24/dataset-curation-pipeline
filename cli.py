@@ -41,12 +41,9 @@ def _positive_int(value: str) -> int:
 
 
 def cmd_ingest_folder(ctx: AppContext, args: argparse.Namespace) -> int:
-    print(
-        f"[ingest-folder] input-dir={args.input_dir} output-folder={args.output_folder} "
-        f"bucket={ctx.cfg.bucket_name}"
-    )
-    # TODO: Implement ingestion (embed -> dedupe check -> insert DB -> copy to S3)
-    return 0
+    from commnds.ingest import ingest as ingest_command
+
+    return ingest_command(ctx, args)
 
 
 def cmd_select_diverse(ctx: AppContext, args: argparse.Namespace) -> int:
