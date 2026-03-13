@@ -22,6 +22,14 @@ DO UPDATE SET
   active = true;
 """
 
+FETCH_VECTORS_BY_PREFIX_SQL = """
+SELECT id, s3_bucket, s3_key, embedding
+FROM public.image_vectors
+WHERE s3_bucket = %s
+  AND s3_key LIKE %s
+ORDER BY id;
+"""
+
 
 def to_pgvector_literal(x: np.ndarray) -> str:
     vector = np.asarray(x, dtype=np.float32).ravel()
@@ -49,3 +57,14 @@ def count_vectors(cursor: Any) -> int:
     cursor.execute("SELECT COUNT(*) FROM public.image_vectors;")
     row = cursor.fetchone()
     return int(row[0]) if row else 0
+
+
+def fetch_vectors_by_prefix(
+    cursor: Any,
+    bucket: str,
+    prefix: str,
+) -> list[tuple[Any, ...]]:
+    normalized_prefix = prefix.strip("/")
+    like_pattern = "%" if not normalized_prefix else f"{normalized_prefix}/%"
+    cursor.execute(FETCH_VECTORS_BY_PREFIX_SQL, (bucket, like_pattern))
+    return cursor.fetchall()

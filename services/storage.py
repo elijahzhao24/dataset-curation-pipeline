@@ -10,3 +10,17 @@ def upload_to_s3(s3_client, local_path: str | Path, bucket: str, key: str) -> No
 def make_s3_key(local_path: str | Path, prefix: str) -> str:
     name = Path(local_path).name
     return f"{prefix.rstrip('/')}/{name}"
+
+
+def copy_s3_object(
+    s3_client,
+    src_bucket: str,
+    src_key: str,
+    dst_bucket: str,
+    dst_key: str,
+) -> None:
+    s3_client.copy_object(
+        Bucket=dst_bucket,
+        Key=dst_key,
+        CopySource={"Bucket": src_bucket, "Key": src_key},
+    )

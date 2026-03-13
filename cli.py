@@ -18,6 +18,7 @@ def parse_args() -> argparse.Namespace:
     diverse = subparsers.add_parser("select-diverse", help="Select k diverse images from bucket folder.")
     diverse.add_argument("--k", required=True, type=_positive_int, help="Number of images to select.")
     diverse.add_argument("--input-folder", required=True, help="Input folder prefix in bucket.")
+    diverse.add_argument("--output-folder", required=True, help="Local output directory for downloaded images.")
     diverse.set_defaults(handler=cmd_select_diverse)
 
     similar = subparsers.add_parser(
@@ -48,11 +49,13 @@ def cmd_ingest_folder(ctx: AppContext, args: argparse.Namespace) -> int:
 
 def cmd_select_diverse(ctx: AppContext, args: argparse.Namespace) -> int:
     print(
-        f"[select-diverse] k={args.k} input-folder={args.input_folder} "
+        f"[select-diverse] k={args.k} input-folder={args.input_folder} output-folder={args.output_folder} "
         f"bucket={ctx.cfg.bucket_name}"
     )
-    # TODO: Implement DB-backed diverse sampling.
-    return 0
+
+    from commnds.diverse import diverse
+
+    return diverse(ctx, args)
 
 
 def cmd_select_similar(ctx: AppContext, args: argparse.Namespace) -> int:
