@@ -1,5 +1,7 @@
 # Repo Setup
 
+If you haven't set up your DB enviorment, see [Database setup](SETUPDB.md).
+
 ## 1) Prerequisites
 
 - Python `3.10+`

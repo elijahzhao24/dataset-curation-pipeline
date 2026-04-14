@@ -27,8 +27,7 @@ VALUES (%s, %s, %s, %s::vector)
 ON CONFLICT (s3_bucket, s3_key)
 DO UPDATE SET
   embedding_version = EXCLUDED.embedding_version,
-  embedding = EXCLUDED.embedding,
-  active = true;
+  embedding = EXCLUDED.embedding;
 """
 
 FETCH_VECTORS_BY_PREFIX_SQL = """
