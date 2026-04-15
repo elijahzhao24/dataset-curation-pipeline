@@ -1,6 +1,8 @@
 # Repo Setup
 
-If you haven't set up your DB enviorment, see [Database setup](SETUPDB.md).
+If you are a normal org user, see [Database setup](SETUPDB.md).
+If you are doing admin provisioning/bootstrap, see [Admin setup](SETUPadmin.md).
+For production ownership/access continuity, see [Production handoff runbook](PROD_HANDOFF.md).
 
 ## 1) Prerequisites
 
