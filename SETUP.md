@@ -1,7 +1,9 @@
 # Repo Setup
 
 If you are a normal org user, see [Database setup](SETUPDB.md).
+
 If you are doing admin provisioning/bootstrap, see [Admin setup](SETUPadmin.md).
+
 For production ownership/access continuity, see [Production handoff runbook](PROD_HANDOFF.md).
 
 ## 1) Prerequisites
@@ -15,7 +17,6 @@ For production ownership/access continuity, see [Production handoff runbook](PRO
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip setuptools wheel
 ```
 
 ## 3) Install dependencies

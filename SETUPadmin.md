@@ -25,15 +25,13 @@ Current setup is a single org AWS account with per-user IAM access keys (no shar
 ### 3.1 S3 bucket
 
 1. Create production S3 bucket.
-2. Enable bucket encryption (SSE-S3 or SSE-KMS).
-3. Save `AWS_S3_BUCKET`, `AWS_REGION`.
+2. Save `AWS_S3_BUCKET`, `AWS_REGION`.
 
 ### 3.2 VPC and security group IP whitelist
 
 1. Create/choose production VPC.
 2. Create RDS security group.
 3. Restrict inbound `TCP 5432` to approved org IP CIDRs only.
-4. Do not allow `0.0.0.0/0` for RDS.
 
 ### 3.3 RDS PostgreSQL
 
@@ -98,7 +96,7 @@ Create a customer-managed IAM policy (replace `<actual bucket name>`):
 Then:
 
 1. Create IAM group for this pipeline and attach policy.
-2. Create IAM user per person (or one service user per service).
+2. Create IAM user per person
 3. Add users to the group.
 4. Save login and access keys securely.
 5. Do not share one IAM key across the team.
@@ -142,9 +140,6 @@ GRANT USAGE, SELECT ON SEQUENCE public.image_vectors_id_seq TO app_user;
 ## 6) Secrets and Sharing
 
 Store `PGPASSWORD` for `app_user` in NordPass (or your team password manager).
-
-- At least 2 maintainers should have access.
-- Do not put DB password in git/docs/chat.
 
 ## 7) Future Migration (Optional)
 

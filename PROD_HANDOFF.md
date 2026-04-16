@@ -19,9 +19,7 @@ Share these operational values with maintainers:
 - `PGUSER`
 - `PGSSLMODE`
 - AWS account ID
-- SSO role or permission-set name
 - Expected AWS profile name format (for example `dataset-curation-prod`)
-- Current auth mode (`interim access keys` or `SSO`)
 
 ## 2) Secret Storage and Ownership
 

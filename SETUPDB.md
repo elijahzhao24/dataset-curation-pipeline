@@ -1,10 +1,10 @@
 # DB + S3 Access Setup (Org Users)
 
 Use this file for normal team onboarding.
+## TLDR
 
-- Admin-only infra/bootstrap tasks moved to [SETUPadmin.md](SETUPadmin.md).
 - DB password (`PGPASSWORD`) should come from NordPass (or your team password manager).
-- Current production auth mode is per-user IAM access keys.
+- Current production auth mode is per-user IAM access keys (either use shared user from nord pass, or request a custom one from manager).
 - SSO remains a future migration option.
 
 ## 1) Before You Start
@@ -13,11 +13,11 @@ Get these values from your admin/handoff docs:
 
 - `AWS_S3_BUCKET`
 - `AWS_REGION`
-- `PGHOST`
 - `PGPORT`
 - `PGDATABASE`
 - `PGUSER` (usually `postgres`)
 - `PGPASSWORD` (from NordPass/password sharer)
+- `PGHOST` 
 
 ## 2) Current Mode: IAM Access Keys
 
