@@ -12,21 +12,98 @@ Run this only if:
 
 If prod infra already exists, teammates do not re-run this.
 
-## 2) Provision Production Infra
+## 2) Current Production Auth Model
 
-### 2.1 S3 bucket
+Current setup is a single org AWS account with per-user IAM access keys (no shared key).
+
+- Create one IAM user per teammate.
+- Put users into a shared group with least-privilege S3 permissions.
+- Keep DB password in password manager.
+
+## 3) Provision Production Infra
+
+### 3.1 S3 bucket
 
 1. Create production S3 bucket.
 2. Enable bucket encryption (SSE-S3 or SSE-KMS).
 3. Save `AWS_S3_BUCKET`, `AWS_REGION`.
 
-### 2.2 RDS PostgreSQL
+### 3.2 VPC and security group IP whitelist
 
-1. Create production PostgreSQL RDS.
-2. Restrict inbound `TCP 5432` in security group to approved org IP ranges.
-3. Save `PGHOST`, `PGPORT`, master username/password.
+1. Create/choose production VPC.
+2. Create RDS security group.
+3. Restrict inbound `TCP 5432` to approved org IP CIDRs only.
+4. Do not allow `0.0.0.0/0` for RDS.
 
-## 3) Bootstrap Database
+### 3.3 RDS PostgreSQL
+
+1. Create production PostgreSQL RDS in the VPC/security group from above.
+2. Save `PGHOST`, `PGPORT`, master username/password.
+
+## 4) IAM Policy, Group, and Users
+
+Create a customer-managed IAM policy (replace `<actual bucket name>`):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "BucketList",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": "arn:aws:s3:::<actual bucket name>"
+    },
+    {
+      "Sid": "ObjectReadWrite",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:AbortMultipartUpload",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::<actual bucket name>/*"
+    },
+    {
+      "Sid": "ViewVpcAndSecurityGroups",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSecurityGroupRules",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeRouteTables",
+        "ec2:DescribeInternetGateways"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EditSecurityGroupWhitelist",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:ModifySecurityGroupRules"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+Then:
+
+1. Create IAM group for this pipeline and attach policy.
+2. Create IAM user per person (or one service user per service).
+3. Add users to the group.
+4. Save login and access keys securely.
+5. Do not share one IAM key across the team.
+
+## 5) Bootstrap Database
 
 Connect as master user:
 
@@ -53,21 +130,30 @@ ON public.image_vectors
 USING hnsw (embedding vector_cosine_ops);
 ```
 
-## 4) Secrets and Sharing
+If you use `PGUSER=app_user` in `.env`, create it and grant permissions:
+
+```sql
+CREATE ROLE app_user WITH LOGIN PASSWORD '<strong_password>';
+GRANT USAGE ON SCHEMA public TO app_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE public.image_vectors TO app_user;
+GRANT USAGE, SELECT ON SEQUENCE public.image_vectors_id_seq TO app_user;
+```
+
+## 6) Secrets and Sharing
 
 Store `PGPASSWORD` for `app_user` in NordPass (or your team password manager).
 
 - At least 2 maintainers should have access.
 - Do not put DB password in git/docs/chat.
 
-## 5) IAM Access Modes
+## 7) Future Migration (Optional)
 
-### 5.1 Interim mode (before SSO is ready)
+### 7.1 Current mode
 
-- Teammates can use their own AWS access keys if they already have admin/required permissions.
+- Teammates use their own AWS access keys from IAM users/groups.
 - Do not share one key across the team.
 
-### 5.2 Target mode (after SSO is ready)
+### 7.2 Target mode (after SSO is ready)
 
 1. In IAM Identity Center, create permission set/role for this pipeline.
 2. Minimum S3 permissions:

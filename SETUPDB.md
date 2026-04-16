@@ -4,7 +4,8 @@ Use this file for normal team onboarding.
 
 - Admin-only infra/bootstrap tasks moved to [SETUPadmin.md](SETUPadmin.md).
 - DB password (`PGPASSWORD`) should come from NordPass (or your team password manager).
-- Auth supports both interim access-key mode and SSO mode.
+- Current production auth mode is per-user IAM access keys.
+- SSO remains a future migration option.
 
 ## 1) Before You Start
 
@@ -15,14 +16,12 @@ Get these values from your admin/handoff docs:
 - `PGHOST`
 - `PGPORT`
 - `PGDATABASE`
-- `PGUSER` (usually `app_user`)
+- `PGUSER` (usually `postgres`)
 - `PGPASSWORD` (from NordPass/password sharer)
 
-## 2) Choose AWS Auth Mode
+## 2) Current Mode: IAM Access Keys
 
-### 2.1 Mode A: Interim access keys (before SSO is set up)
-
-Use this if your org has not finished IAM Identity Center setup yet.
+Use your own IAM user key and secret from the IAM group. (get admin to make one for you, or use default one in nordpass)
 
 ```env
 AWS_S3_BUCKET=<prod_bucket_name>
@@ -32,48 +31,6 @@ AWS_ACCESS_KEY_ID=<your_key>
 AWS_SECRET_ACCESS_KEY=<your_secret>
 AWS_SESSION_TOKEN=<leave blank>
 AWS_PROFILE=<leave blank>
-
-PGHOST=<rds_endpoint>
-PGPORT=5432
-PGDATABASE=dataset_curation
-PGUSER=app_user
-PGPASSWORD=<from_nordpass>
-PGSSLMODE=require
-```
-
-Notes:
-
-- Use your own credentials only.
-- Do not share one access key across teammates.
-
-### 2.2 Mode B: SSO profile (target state)
-
-Use this after IAM Identity Center is ready.
-
-1. Configure SSO profile:
-
-```powershell
-aws configure sso
-```
-
-2. Log in:
-
-```powershell
-aws sso login --profile <ORG_SSO_PROFILE>
-aws sts get-caller-identity --profile <ORG_SSO_PROFILE>
-```
-
-3. Use this `.env`:
-
-```env
-AWS_S3_BUCKET=<prod_bucket_name>
-AWS_REGION=<aws_region>
-AWS_PROFILE=<ORG_SSO_PROFILE>
-
-# keep empty when using SSO
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_SESSION_TOKEN=
 
 PGHOST=<rds_endpoint>
 PGPORT=5432
@@ -108,7 +65,7 @@ CLI check:
 python cli.py --help
 ```
 
-## 4) Migration from Access Keys to SSO
+## 4) Optional Future: Migrate to SSO
 
 When SSO is ready:
 
