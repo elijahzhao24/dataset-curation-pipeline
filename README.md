@@ -10,13 +10,13 @@ The pipeline leverages vision models like Meta AI's DINOv2, pgVector, and sampli
 
 # How to use
 
-How to set up the repo: [Repo and Database setup](SETUP.md).
+How to set up the repo: [Repo and Database setup](repoguide/SETUP.md).
 
-Admin provisioning/bootstrap: [Admin setup](SETUPadmin.md).
+Admin provisioning/bootstrap: [Admin setup](repoguide/SETUPadmin.md).
 
-Production ownership/access handoff: [Production handoff runbook](PROD_HANDOFF.md).
+Production ownership/access handoff: [Production handoff runbook](repoguide/PROD_HANDOFF.md).
 
-How to use from CLI: [How to use](HOWTOUSE.md).
+How to use from CLI: [How to use](repoguide/HOWTOUSE.md).
 
 # Problem Context
 
